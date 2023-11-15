@@ -2,11 +2,11 @@ use std::io::{BufWriter, Stdout, Write};
 use std::path::Path;
 use std::error::Error;
 
-use bucket::{Bucket, Format};
 use cli::Cli;
+use directory::{Directory, Format};
 
 pub mod cli;
-mod bucket;
+mod directory;
 
 pub fn run(args: Cli, writer: &mut BufWriter<Stdout>) -> Result<(), Box<dyn Error>>{
     let paths = match args.files.clone() {
@@ -15,7 +15,7 @@ pub fn run(args: Cli, writer: &mut BufWriter<Stdout>) -> Result<(), Box<dyn Erro
     };
 
     let mut files: Vec<String> = vec![];
-    let mut directories: Vec<Bucket> = Vec::with_capacity(paths.iter().filter(|p| p.is_dir()).count());
+    let mut directories: Vec<Directory> = Vec::with_capacity(paths.iter().filter(|p| p.is_dir()).count());
 
     for p in paths.iter() {
         if p.is_file() {
@@ -32,7 +32,7 @@ pub fn run(args: Cli, writer: &mut BufWriter<Stdout>) -> Result<(), Box<dyn Erro
                     }
                 }).collect();
 
-            let bucket = Bucket::new(name, items);
+            let bucket = Directory::new(name, items);
 
             directories.push(bucket);
         }
@@ -61,7 +61,7 @@ pub fn run(args: Cli, writer: &mut BufWriter<Stdout>) -> Result<(), Box<dyn Erro
             writeln!(writer)?;
         }
 
-        b.write(writer, Format::Inline, has_multiple_dirs)?;
+        b.write(writer, Format::Inline, has_multiple_dirs, &args)?;
     }
 
     Ok(())
